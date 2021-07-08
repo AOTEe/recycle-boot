@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.recycle.dao.RecordDao">
+    
+
+
+    <!--进场打卡-->
+    <insert id="insertRecord">
+        insert into `t_record` (`carrier_id`,`car_num`,`begin_time`,`begin_img`,`begin_weight`)
+        values (#{carrierId},#{carNum},NOW(),#{beginImg},#{beginWeight})
+    </insert>
+    <!--退场打卡-->
+    <update id="updateRecordOut" >
+        update `t_record` set `end_time`=now(),`end_img`=#{endImg},`end_weight`=#{endWeight} where record_id=#{recordId}
+    </update>
+
+    <select id="findRecordList" resultType="com.recycle.bean.Record">
+        SELECT r.record_id,c.real_name,r.car_num,r.begin_time,r.end_time,r.begin_img,r.end_img,r.begin_weight,r.end_img,r.end_weight FROM t_record AS r,t_carrier AS c
+        <where>
+            and r.carrier_id=c.carrier_id
+            <if test="realName!=null and realName!=''">
+                and r.carrier_id in
+                (SELECT `carrier_id` FROM `t_carrier` WHERE real_name like concat("%",#{realName},"%"))
+            </if>
+            <if test="carNum!=null and carNum!=''">
+                and car_num=#{carNum}
+            </if>
+            <if test="recordTime!=null and recordTime!=''">
+                and DATE_FORMAT(begin_time,'%Y-%m-%d')=#{recordTime}
+            </if>
+        </where>
+        order by record_id asc
+        limit #{index},#{size}
+    </select>
+
+    <select id="findRecordCount" resultType="int">
+        select count(`record_id`) from `t_record` as r,`t_carrier` as c
+        <where>
+            and r.carrier_id=c.carrier_id
+            <if test="realName!=null and realName!=''">
+                and r.carrier_id in
+                (SELECT `carrier_id` FROM `t_carrier` WHERE real_name like concat("%",#{realName},"%"))
+            </if>
+            <if test="carNum!=null and carNum!=''">
+                and car_num=#{carNum}
+            </if>
+            <if test="recordTime!=null and recordTime!=''">
+                and DATE_FORMAT(begin_time,'%Y-%m-%d')=#{recordTime}
+            </if>
+        </where>
+    </select>
+
+    <!--弃用-->
+    <select id="isSignIn" resultType="int">
+        select count(carrier_id) from t_record
+        where carrier_id=#{carrierId}
+        and DATE_FORMAT(record_time,'%Y-%m-%d')=DATE_FORMAT(NOW(),'%Y-%m-%d')
+    </select>
+
+    <!--查看收货员当天的进退场状态-->
+    <select id="getTodayRecordByCarrierId" resultType="com.recycle.bean.Record">
+        SELECT r.record_id,c.real_name,r.car_num,r.begin_time,r.end_time,r.begin_img,r.end_img,r.begin_weight,r.end_weight
+        FROM t_record AS r,t_carrier AS c where r.carrier_id=c.carrier_id
+        and r.carrier_id=#{carrierId} and DATE_FORMAT(begin_time,'%Y-%m-%d')=DATE_FORMAT(NOW(),'%Y-%m-%d')
+        ORDER BY record_id DESC LIMIT 0,1
+    </select>
+
+    <select id="findRecordsByCarrierId" resultType="com.recycle.bean.Record">
+        SELECT r.record_id,c.real_name,r.car_num,r.begin_time,r.end_time,r.begin_img,r.end_img,r.begin_weight,r.end_weight
+        FROM t_record AS r,t_carrier AS c where r.carrier_id=c.carrier_id
+        and r.carrier_id=#{carrierId}
+        order by record_id desc limit #{index},5
+    </select>
+
+    <select id="findRecordCountByCarrierId" resultType="int">
+        select count(carrier_id) from t_record where carrier_id=#{carrierId}
+    </select>
+
+</mapper>

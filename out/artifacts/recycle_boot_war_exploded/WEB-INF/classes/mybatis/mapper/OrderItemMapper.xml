@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.recycle.dao.OrderItemDao">
+    <resultMap id="OrderItemMap" type="com.recycle.bean.OrderItem" >
+        <id column="orderitem_id" property="orderItemId" />
+        <result column="count" property="count" />
+        <result column="item_price" property="itemPrice"  />
+        <association property="waste" column="waste_id" select="com.recycle.dao.WasteDao.findByWasteId"/>
+    </resultMap>
+
+
+
+    <!--根据orderId查询订单项的内容-->
+    <select id="findByOrderId" resultMap="OrderItemMap">
+        select * from `t_orderitem` where `order_id` =#{orderId}
+    </select>
+
+    <!--确定订单项内容-->
+    <update id="confirmOrderItem" parameterType="java.util.List">
+        <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+            update `t_orderitem`
+            <set>
+                <if test="item.count!=null">
+                    `count`=#{item.count},
+                </if>
+                <if test="item.itemPrice!=null">
+                    `item_price`=#{item.itemPrice},
+                </if>
+            </set>
+             where `orderitem_id`=#{item.orderItemId}
+        </foreach>
+    </update>
+
+    <insert id="addOrderItem" parameterType="int">
+        insert into  `t_orderitem` (`order_id`,`waste_id`)
+        values (#{orderId},#{wasteId})
+    </insert>
+
+    <select id="getLastId" resultType="int">
+        select `orderitem_id` from `t_orderitem`
+        order by `orderitem_id` desc
+        limit 0,1
+    </select>
+</mapper>

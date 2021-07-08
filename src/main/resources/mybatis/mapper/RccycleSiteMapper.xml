@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.recycle.dao.RecycleSiteDao">
+
+
+
+    <select id="getSiteList" resultType="com.recycle.bean.RecycleSite">
+        select * from `t_recyclesite`
+        <where>
+            <if test="siteName!=null and siteName!=''">
+                and site_name like concat("%",#{siteName},"%")
+            </if>
+            <if test="region!=null and region!=''">
+                and region like concat("%",#{region},"%")
+            </if>
+        </where>
+        ORDER BY  site_id asc
+        limit #{index},#{limit}
+    </select>
+
+    <select id="getSiteCount" resultType="int">
+        select count(site_id) from `t_recyclesite`
+        <where>
+            <if test="siteName!=null and siteName!=''">
+                and site_name like concat("%",#{siteName},"%")
+            </if>
+            <if test="region!=null and region!=''">
+                and region like concat("%",#{region},"%")
+            </if>
+        </where>
+    </select>
+
+    <delete id="delSiteById">
+        delete from `t_recyclesite` where site_id=#{siteId}
+    </delete>
+
+    <insert id="addSite" >
+        insert into `t_recyclesite`(`site_name`,`address`,`lng`,`lat`,`region`)
+        values (#{siteName},#{address},#{lng},#{lat},#{region})
+    </insert>
+
+    <update id="updateSite">
+        update `t_recyclesite`
+            <set>
+                <if test="siteName!=null and siteName!=''">
+                    site_name=#{siteName},
+                </if>
+                <if test="address!=null and address!=''">
+                    address=#{address},
+                </if>
+                <if test="lng!=null">
+                    lng=#{lng},
+                </if>
+                <if test="lat!=null">
+                    lat=#{lat},
+                </if>
+                <if test="region!=null and region!=''">
+                    region=#{region},
+                </if>
+            </set>
+            where site_id=#{siteId}
+    </update>
+
+    <select id="getRecycleSites" resultType="com.recycle.bean.RecycleSite">
+        select r.* from  `t_recyclesite` as r,`t_carrier` as c where r.`region`=c.`region` and c.`carrier_id`=#{carrierId}
+    </select>
+
+
+</mapper>

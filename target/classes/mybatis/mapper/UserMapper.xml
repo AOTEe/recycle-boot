@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.recycle.dao.UserDao">
+    <resultMap id="UserMap" type="com.recycle.bean.User" >
+        <id column="user_id" property="userId" />
+        <result column="openid" property="openId" />
+        <result column="nick_name" property="nickName"  />
+        <result column="wx_picture" property="wxPicture"  />
+        <result column="gender" property="gender"  />
+        <result column="mobile" property="mobile"  />
+        <result column="money_code" property="moneyCode"  />
+        <result column="rest_money" property="restMoney"  />
+    </resultMap>
+
+    <select id="findByUserId" resultMap="UserMap">
+        select * from `t_user` where `user_id` =#{userId}
+    </select>
+
+    <select id="findByOpenid" resultMap="UserMap">
+        select * from `t_user` where openid=#{openId}
+    </select>
+
+    <insert id="addUser">
+        insert into `t_user`(`openid`) values (#{openId})
+    </insert>
+
+    <update id="updateUserInfo">
+        update `t_user`
+        <set>
+            <if test="nickName!=null and nickName!=''">
+                `nick_name`=#{nickName},
+            </if>
+            <if test="wxPicture!=null and wxPicture!=''">
+                `wx_picture`=#{wxPicture},
+            </if>
+            <if test="gender!=null">
+                `gender`=#{gender},
+            </if>
+            <if test="mobile!=null and mobile!=''">
+                `mobile`=#{mobile},
+            </if>
+            <if test="moneyCode!=null and moneyCode!=''">
+                `money_code`=#{moneyCode},
+            </if>
+            <if test="restMoney!=null">
+                `rest_money`=#{restMoney},
+            </if>
+        </set>
+        where `user_id`=#{userId}
+    </update>
+
+    <select id="getUserList" resultType="com.recycle.bean.User">
+        select * from `t_user`
+        <where>
+            <if test="userId!=null">
+                and `user_id` =#{userId}
+            </if>
+        </where>
+        ORDER BY  `user_id` asc
+        limit #{index},#{limit}
+    </select>
+
+    <select id="getUserCount" resultType="int">
+        select count(user_id) from `t_user`
+        <where>
+            <if test="userId!=null">
+                and `user_id` =#{userId}
+            </if>
+        </where>
+    </select>
+
+    <!--扣除余额-->
+    <update id="restMoneyDown">
+        update `t_user` set `rest_money`=`rest_money`-#{money}
+        where `user_id`=#{userId}
+    </update>
+
+    <!--订单完成用户余额增加-->
+    <update id="addRestMoney">
+        update `t_user` set `rest_money`=`rest_money`+#{price}
+        where `user_id`=#{userId}
+    </update>
+</mapper>

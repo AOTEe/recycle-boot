@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.recycle.dao.WithdrawDao">
+
+    <insert id="subWithdraw">
+        insert into `t_withdraw` (`user_id`,`money`,`state`,`sub_time`)
+        values (#{userId},#{money},0,now())
+    </insert>
+
+    <update id="updateWithdraw">
+        update `t_withdraw` set `state`=1,`pay_time`=now(),`wx_orderno`=#{wxOrderno},`admin_id`=#{adminId}
+        where `withdraw_id`=#{withdrawId}
+    </update>
+
+    <select id="getWithdrawList" resultType="com.recycle.bean.Withdraw">
+        select w.*,u.`money_code` from `t_withdraw` w,`t_user` u
+        <where>
+            w.`user_id`=u.`user_id`
+            <if test="userId!=null">
+                and w.user_id=#{userId}
+            </if>
+            <if test="adminId!=null">
+                and w.admin_id=#{adminId}
+            </if>
+            <if test="state!=null">
+                and w.state=#{state}
+            </if>
+        </where>
+        order by withdraw_id desc
+        limit #{index},#{limit}
+    </select>
+
+    <select id="getWithdrawCount" resultType="int">
+        select count(`withdraw_id`) from `t_withdraw`
+        <where>
+            <if test="userId!=null">
+                and user_id=#{userId}
+            </if>
+            <if test="adminId!=null">
+                and admin_id=#{adminId}
+            </if>
+            <if test="state!=null">
+                and state=#{state}
+            </if>
+        </where>
+    </select>
+
+    <!--用户查看历史提现记录-->
+    <select id="getUserWithdrawList" resultType="com.recycle.bean.Withdraw">
+        select * from `t_withdraw`
+        <where>
+            <if test="userId!=null">
+                and user_id=#{userId}
+            </if>
+            <if test="state!=null">
+                and state=#{state}
+            </if>
+        </where>
+        order by withdraw_id desc
+        limit #{currentIndex},5
+    </select>
+
+    <select id="getUserWithdrawCount" resultType="int">
+        select count(`withdraw_id`) from `t_withdraw`
+        <where>
+            <if test="userId!=null">
+                and user_id=#{userId}
+            </if>
+            <if test="state!=null">
+                and state=#{state}
+            </if>
+        </where>
+    </select>
+
+</mapper>

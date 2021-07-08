@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.recycle.dao.WasteDao">
+    <resultMap type="com.recycle.bean.Waste" id="wasteMap">
+        <id property="wasteId" column="waste_id"/>
+        <result property="wasteName" column="waste_Name" />
+        <result property="unit" column="unit" />
+        <result property="price" column="price" />
+        <result property="imageUrl" column="image_url" />
+        <result property="describe" column="describe" />
+        <result property="state" column="state" />
+    </resultMap>
+
+    <!--在获取废品信息是都加上了state=1(可用状态)-->
+
+    <select id="getWasteList" resultMap="wasteMap">
+        select * from `t_waste`
+        <where>
+            state=1
+            <if test="wasteName!=null and wasteName!=''">
+                and waste_name like concat("%",#{wasteName},"%")
+            </if>
+        </where>
+        ORDER BY  waste_id asc
+        limit #{currentPage},#{pageSize}
+    </select>
+
+    <select id="getWasteCount" resultType="int">
+        select count(waste_id) from `t_waste`
+        <where>
+            state=1
+            <if test="wasteName!=null and wasteName!=''">
+                and waste_name like concat("%",#{wasteName},"%")
+            </if>
+        </where>
+    </select>
+
+    <select id="findByWasteId" resultType="com.recycle.bean.Waste">
+        select * from `t_waste` where `waste_id`=#{wasteId}
+    </select>
+
+    <insert id="addWaste">
+        insert into `t_waste` (`waste_name`,`unit`,`price`,`image_url`,`describe`,`state`)
+        values (#{wasteName},#{unit},#{price},#{imageUrl},#{describe},1)
+    </insert>
+
+
+    <update id="delWasteById">
+        update `t_waste` set `state`=0 where  `waste_id`=#{t_waste}
+    </update>
+<!--    <delete id="delWasteById">
+        delete from `t_waste` where `waste_id`=#{t_waste}
+    </delete>-->
+
+    <update id="updateWasteById">
+        update `t_waste`
+            <set>
+                <if test="wasteName!=null and wasteName!=''">
+                    `waste_name`=#{wasteName},
+                </if>
+                <if test="price!=null ">
+                    `price`=#{price},
+                </if>
+                <if test="unit!=null and unit!=''">
+                    `unit`=#{unit},
+                </if>
+                <if test="describe!=null and describe!=''">
+                    `describe`=#{describe},
+                </if>
+                <if test="imageUrl!=null and imageUrl!=''">
+                    `image_url`=#{imageUrl},
+                </if>
+            </set>
+        where `waste_id`=#{wasteId}
+    </update>
+
+    <select id="getAllWasteName" resultType="string">
+        select `waste_name` from t_waste where `state`=1
+    </select>
+
+    <select id="getAllWaste" resultType="com.recycle.bean.Waste">
+        select * from t_waste where `state`=1
+    </select>
+
+<!--    <select id="getWasteListByWasteIds" resultType="com.recycle.bean.Waste">
+        select * from `t_waste`  where  `waste_id` in
+        <foreach collection="list" item="valueList" open="(" close=")" separator=",">
+            #{wasteIds}
+        </foreach>
+    </select>-->
+
+    <select id="getWasteListById" resultType="com.recycle.bean.Waste">
+        select * from `t_waste` where waste_id=#{wasteId}
+    </select>
+
+    <!--获取上个月完成订单的不同废品的成交金额-->
+    <select id="getWasteData" resultType="map">
+        SELECT w.waste_name waste,SUM(oi.item_price) price
+        FROM t_waste w,`t_orderitem` oi ,t_order o
+        WHERE oi.waste_id=w.waste_id AND o.order_id=oi.order_id
+            AND DATE_FORMAT(o.assign_time,'%Y-%m') = DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 MONTH),'%Y-%m')
+            AND o.state=2
+            AND o.address LIKE CONCAT("%",#{region},"%")
+        GROUP BY w.waste_id
+    </select>
+
+    <select id="getRegionData" resultType="map">
+        SELECT c.region as region,SUM(o.`weight`) as  weight FROM `t_order`  o,`t_carrier` c
+        WHERE c.carrier_id=o.carrier_id AND o.address LIKE CONCAT("%",#{region},"%") AND o.state=2
+        GROUP BY c.region
+    </select>
+</mapper>

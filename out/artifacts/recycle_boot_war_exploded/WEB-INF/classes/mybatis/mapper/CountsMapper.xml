@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.recycle.dao.CountsDao">
+
+    <select id="countExist" resultType="com.recycle.bean.AssignCarrier">
+         SELECT * FROM `t_counts`
+         WHERE `oneday`=DATE_FORMAT(NOW(),'%Y-%m-%d') and `carrier_id` =#{carrierId}
+    </select>
+
+    <insert id="insertTodayCount">
+        INSERT INTO `t_counts` (carrier_id,oneday,assigned,finished,achievement)
+            VALUE (#{carrierId},DATE_FORMAT(NOW(),'%Y-%m-%d'),0,0,0.0)
+    </insert>
+
+    <update id="finishedPlus">
+        update `t_counts` set `finished`=`finished`+1
+        where `carrier_id` =#{carrierId} and  `oneday`=DATE_FORMAT(NOW(),'%Y-%m-%d')
+    </update>
+
+    <update id="assignedPlus">
+        update `t_counts` set `assigned`=`assigned`+1
+        where `carrier_id` =#{carrierId} and  `oneday`=DATE_FORMAT(NOW(),'%Y-%m-%d')
+    </update>
+
+
+</mapper>

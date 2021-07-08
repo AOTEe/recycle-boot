@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.recycle.dao.AdminDao">
+
+    <resultMap type="com.recycle.bean.Admin" id="adminInfoMap">
+        <id property="id" column="id"/>
+        <result property="account" column="account"/>
+        <result property="realName" column="real_name"/>
+        <result property="mobile" column="mobile"/>
+        <result property="lastIp" column="last_ip"/>
+        <result property="lastTime" column="last_time"/>
+        <result property="role" column="role"/>
+        <result property="avatar" column="avatar"/>
+        <result property="gender" column="gender"/>
+
+    </resultMap>
+
+    <select id="getAdminInfoLists" resultMap="adminInfoMap">
+        select *
+        from `t_admin`
+    </select>
+
+    <select id="getAccount" resultType="com.recycle.bean.Admin">
+        select *
+        from `t_admin`
+        where `account` = #{account}
+          and `pwd` = #{password}
+    </select>
+
+    <update id="updatePwd">
+        update `t_admin`
+        set `pwd`=#{newPwd}
+    </update>
+
+    <update id="updateLast">
+        update `t_admin`
+        set `last_ip`=#{currentIp},
+            `last_time`=now()
+        where `id` = #{id};
+    </update>
+
+    <update id="updateAdminInfo">
+        update `t_admin`
+        <set>
+            <if test="realName!=null and realName!=''">
+                real_name=#{realName},
+            </if>
+            <if test="mobile!=null and mobile!=''">
+                mobile=#{mobile},
+            </if>
+            <if test="role!=null ">
+                `role`=#{role},
+            </if>
+            <if test="avatar!=null and avatar!=''">
+                avatar=#{avatar},
+            </if>
+            <if test="gender!=null">
+                gender=#{gender},
+            </if>
+        </set>
+        where `id`=#{id}
+    </update>
+
+    <select id="getAdminCount" resultType="int">
+        select count(`id`) from `t_admin`
+        <where>
+            <if test="realName!=null and realName!=''">
+                and real_name like concat("%",#{realName},"%")
+            </if>
+            <if test="mobile!=null and mobile!=''">
+                and mobile=#{mobile}
+            </if>
+            <if test="role!=null">
+                and `role`=#{role}
+            </if>
+        </where>
+    </select>
+
+    <select id="getAdminList" resultType="com.recycle.bean.Admin">
+        select * from `t_admin`
+        <where>
+            <if test="realName!=null and realName!=''">
+                and real_name like concat("%",#{realName},"%")
+            </if>
+            <if test="mobile!=null and mobile!=''">
+                and mobile=#{mobile}
+            </if>
+            <if test="role!=null">
+                and `role`=#{role}
+            </if>
+        </where>
+        order by `id` asc
+        limit #{index},#{limit}
+    </select>
+
+    <select id="accountExist" resultType="int">
+        select count(`account`) from `t_admin` where `account`=#{account}
+    </select>
+
+    <insert id="addAdmin">
+        insert into `t_admin` (`account`,`real_name`,`mobile`,`gender`,`role`,`pwd`,`avatar`)
+        values (#{account},#{realName},#{mobile},#{gender},#{role},#{pwd},#{avatar})
+    </insert>
+
+    <delete id="delAdminById">
+        delete from  `t_admin` where `id`=#{id}
+    </delete>
+
+    <update id="resetAdminPwd">
+        update `t_admin` set `pwd`=#{pwd} where `id`=#{id}
+    </update>
+
+    <update id="changeRole">
+        update `t_admin` set `role`=#{role} where `id`=#{id}
+    </update>
+</mapper>
